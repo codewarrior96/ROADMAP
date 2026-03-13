@@ -160,5 +160,5 @@ YolHaritam-AI/
     placeholder.txt
 ```
 
-Bu yapı, küçük ama **üniversite dersi için sunulabilir** nitelikte, anlaşılır ve genişletilebilir bir MVP ortaya koymayı amaçlar.
+
 
