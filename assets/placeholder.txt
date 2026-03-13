@@ -1,0 +1,2 @@
+Bu klasör, ileride eklenecek görsel veya statik dosyalar için yer tutucu olarak oluşturulmuştur.
+

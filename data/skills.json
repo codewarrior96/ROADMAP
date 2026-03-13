@@ -1,0 +1,239 @@
+[
+  {
+    "id": "problem_solving",
+    "display_name": "Problem Çözme",
+    "category": "Genel",
+    "difficulty": 2,
+    "quick_win": true,
+    "prerequisites": [],
+    "mini_tasks": [
+      "3 gerçek hayat problemi seç ve adım adım çözüm planı çıkar.",
+      "Bir algoritma sorusunu kağıt üzerinde çözmeyi dene.",
+      "Günlük hayattan bir süreci (örneğin ders çalışma) adımlara böl."
+    ]
+  },
+  {
+    "id": "python_basics",
+    "display_name": "Python Temelleri",
+    "category": "Programlama",
+    "difficulty": 2,
+    "quick_win": true,
+    "prerequisites": [],
+    "mini_tasks": [
+      "Değişkenler, listeler ve sözlükler ile 5 basit örnek yaz.",
+      "Kullanıcıdan girdi alan küçük bir hesap makinesi yaz.",
+      "Bir listeyi dolaşıp ortalamasını hesaplayan bir fonksiyon yaz."
+    ]
+  },
+  {
+    "id": "git_basics",
+    "display_name": "Git ve Versiyon Kontrol",
+    "category": "Profesyonel Pratikler",
+    "difficulty": 2,
+    "quick_win": true,
+    "prerequisites": [],
+    "mini_tasks": [
+      "Git kur ve örnek bir depo oluştur.",
+      "En az 3 commit içeren küçük bir proje oluştur.",
+      "GitHub'a basit bir depo yükle."
+    ]
+  },
+  {
+    "id": "linear_algebra",
+    "display_name": "Lineer Cebir Temelleri",
+    "category": "Matematik",
+    "difficulty": 3,
+    "quick_win": false,
+    "prerequisites": [],
+    "mini_tasks": [
+      "Vektör ve matris kavramlarını özetleyen kısa not çıkar.",
+      "2x2 matrislerle temel çarpma örnekleri çöz.",
+      "Satır uzayı ve sütun uzayı kavramlarını araştır."
+    ]
+  },
+  {
+    "id": "statistics_fundamentals",
+    "display_name": "İstatistik Temelleri",
+    "category": "Veri Bilimi",
+    "difficulty": 3,
+    "quick_win": false,
+    "prerequisites": [
+      "linear_algebra"
+    ],
+    "mini_tasks": [
+      "Ortalama, medyan, varyans ve standart sapma kavramlarını özetle.",
+      "Küçük bir veri listesi oluşturup temel istatistiklerini hesapla.",
+      "Dağılım grafikleri ve kutu grafikleri hakkında kısa not çıkar."
+    ]
+  },
+  {
+    "id": "pandas_library",
+    "display_name": "Pandas ile Veri İşleme",
+    "category": "Veri Bilimi",
+    "difficulty": 3,
+    "quick_win": true,
+    "prerequisites": [
+      "python_basics"
+    ],
+    "mini_tasks": [
+      "CSV dosyası okuyup ilk 5 satırı görüntüleyen kod yaz.",
+      "Eksik değerleri kontrol eden ve basitçe dolduran bir örnek hazırla.",
+      "Gruplama ve özet alma işlemleriyle küçük bir analiz yap."
+    ]
+  },
+  {
+    "id": "sql_basics",
+    "display_name": "SQL Temelleri",
+    "category": "Veri Tabanları",
+    "difficulty": 3,
+    "quick_win": true,
+    "prerequisites": [],
+    "mini_tasks": [
+      "SELECT, WHERE ve ORDER BY kullanan 5 sorgu yaz.",
+      "Basit bir tablo şeması tasarla ve örnek kayıtlar ekle.",
+      "GROUP BY ve COUNT ile küçük bir sorgu yaz."
+    ]
+  },
+  {
+    "id": "data_analysis",
+    "display_name": "Veri Analizi Düşünme",
+    "category": "Veri Bilimi",
+    "difficulty": 3,
+    "quick_win": false,
+    "prerequisites": [
+      "python_basics",
+      "pandas_library",
+      "statistics_fundamentals"
+    ],
+    "mini_tasks": [
+      "Basit bir veri seti seç ve 3 soru belirle.",
+      "Bu soruları cevaplamak için gereken grafikleri planla.",
+      "Analiz sonucunu 1 sayfalık kısa raporla özetle."
+    ]
+  },
+  {
+    "id": "data_visualization",
+    "display_name": "Veri Görselleştirme",
+    "category": "Veri Bilimi",
+    "difficulty": 3,
+    "quick_win": true,
+    "prerequisites": [
+      "python_basics",
+      "pandas_library"
+    ],
+    "mini_tasks": [
+      "En az 3 farklı grafik türü (çizgi, bar, histogram) oluştur.",
+      "Grafik başlığı ve eksen açıklamalarını anlamlı şekilde doldur.",
+      "Küçük bir veri hikayesini yalnızca grafiklerle anlatmayı dene."
+    ]
+  },
+  {
+    "id": "machine_learning",
+    "display_name": "Makine Öğrenmesi Temelleri",
+    "category": "Yapay Zeka",
+    "difficulty": 4,
+    "quick_win": false,
+    "prerequisites": [
+      "python_basics",
+      "statistics_fundamentals",
+      "linear_algebra"
+    ],
+    "mini_tasks": [
+      "Denetimli ve denetimsiz öğrenme farkını özetle.",
+      "Basit bir doğrusal regresyon örneği uygula.",
+      "Eğitim/doğrulama/test ayrımı mantığını açıkla."
+    ]
+  },
+  {
+    "id": "deep_learning",
+    "display_name": "Derin Öğrenme Giriş",
+    "category": "Yapay Zeka",
+    "difficulty": 5,
+    "quick_win": false,
+    "prerequisites": [
+      "machine_learning",
+      "python_basics"
+    ],
+    "mini_tasks": [
+      "Yapay sinir ağı katmanlarını görselleştirerek özetle.",
+      "Basit bir sınıflandırma problemi için tek gizli katmanlı ağ örneği incele.",
+      "Overfitting kavramını araştır ve 3 çözüm yaklaşımı yaz."
+    ]
+  },
+  {
+    "id": "prompt_engineering",
+    "display_name": "Prompt Engineering",
+    "category": "Yapay Zeka",
+    "difficulty": 2,
+    "quick_win": true,
+    "prerequisites": [
+      "problem_solving"
+    ],
+    "mini_tasks": [
+      "Aynı soruyu 3 farklı şekilde sorarak gelen cevapları karşılaştır.",
+      "Adım adım düşünme (chain-of-thought) isteği içeren promptlar yaz.",
+      "Bir projeyi açıklayan sistem, kullanıcı ve asistan rolleri tanımla."
+    ]
+  },
+  {
+    "id": "html_css",
+    "display_name": "HTML & CSS Temelleri",
+    "category": "Frontend",
+    "difficulty": 2,
+    "quick_win": true,
+    "prerequisites": [
+      "problem_solving"
+    ],
+    "mini_tasks": [
+      "Basit bir kişisel tanıtım sayfası tasarla.",
+      "Flexbox kullanarak 2 sütunlu bir yerleşim hazırla.",
+      "Renk paleti ve tipografi seçerek stil dosyası oluştur."
+    ]
+  },
+  {
+    "id": "javascript_basics",
+    "display_name": "JavaScript Temelleri",
+    "category": "Frontend",
+    "difficulty": 3,
+    "quick_win": false,
+    "prerequisites": [
+      "html_css"
+    ],
+    "mini_tasks": [
+      "DOM üzerinde bir butona tıklanınca metni değiştiren fonksiyon yaz.",
+      "Array ve obje işlemleri için 5 küçük örnek hazırla.",
+      "Fetch API ile örnek bir JSON isteği yap."
+    ]
+  },
+  {
+    "id": "react_basics",
+    "display_name": "React ile Arayüz Geliştirme",
+    "category": "Frontend",
+    "difficulty": 4,
+    "quick_win": false,
+    "prerequisites": [
+      "javascript_basics"
+    ],
+    "mini_tasks": [
+      "Bileşen mantığını anlatan kısa bir özet hazırla.",
+      "State ve props kullanan küçük bir sayaç uygulaması yaz.",
+      "Liste render eden ve filtreleme yapan bir bileşen geliştir."
+    ]
+  },
+  {
+    "id": "apis_rest",
+    "display_name": "API ve REST Mantığı",
+    "category": "Genel",
+    "difficulty": 3,
+    "quick_win": false,
+    "prerequisites": [
+      "python_basics",
+      "javascript_basics"
+    ],
+    "mini_tasks": [
+      "REST kavramını ve HTTP metotlarını özetle.",
+      "Herhangi bir açık API'den veri çeken küçük bir örnek yaz.",
+      "Basit bir endpoint tasarlayıp giriş/çıkış şemasını çiz."
+    ]
+  }
+]
