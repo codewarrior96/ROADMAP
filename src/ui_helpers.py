@@ -1089,23 +1089,8 @@ def render_onboarding_page(
     role_options = {r.display_name: r.id for r in roles.values()}
     default_role_name = sorted(role_options.keys())[0]
 
-    # Initial hidden selectors to get values
-    with st.container():
-        init_cols = st.columns(3)
-        with init_cols[0]:
-            role_name = st.selectbox(
-                "init_role",
-                options=list(role_options.keys()),
-                index=0,
-                label_visibility="collapsed",
-                key="onboard_init_role"
-            )
-        with init_cols[1]:
-            weekly_hours = st.number_input("h", min_value=2.0, max_value=40.0, value=8.0, step=1.0, label_visibility="collapsed", key="onboard_init_hours")
-        with init_cols[2]:
-            duration_weeks = st.number_input("w", min_value=1, max_value=12, value=4, step=1, label_visibility="collapsed", key="onboard_init_weeks")
-
-    selected_role_id = role_options[role_name]
+    # Tema için varsayılan rol (görünür kontrollerden önce tema seçimi)
+    selected_role_id = role_options[default_role_name]
     selected_role = roles[selected_role_id]
     theme = get_role_theme(selected_role_id)
 
@@ -1399,15 +1384,24 @@ def render_dashboard_page(
         st.markdown(skill_card_html, unsafe_allow_html=True)
 
     with col_ai:
-        next_skill_name = "Python Temelleri"
-        next_skill_hours = 4.0
-        next_skill_explanation = "Temel programlama becerileri, tüm teknik rollerin yapı taşıdır. Değişkenler, döngüler ve fonksiyonlar ile başla."
+        # Boş durum: henüz haftalık plan yoksa, kullanıcıyı önce profil/ yol haritası oluşturmaya yönlendir
+        if not weeks:
+            next_skill_name = "Önce yol haritanı oluştur"
+            next_skill_hours = 0.0
+            next_skill_explanation = (
+                "AI tavsiyesini görmek için önce **Hedef ve Profil** sayfasına gidip "
+                "\"Yol Haritamı Oluştur\" butonuna tıklayarak kişisel öğrenme planını oluşturmalısın."
+            )
+        else:
+            next_skill_name = "Python Temelleri"
+            next_skill_hours = 4.0
+            next_skill_explanation = "Temel programlama becerileri, tüm teknik rollerin yapı taşıdır. Değişkenler, döngüler ve fonksiyonlar ile başla."
 
-        if weeks and weeks[0].skills:
-            first_skill = weeks[0].skills[0]
-            next_skill_name = first_skill.display_name
-            next_skill_hours = first_skill.estimated_hours
-            next_skill_explanation = first_skill.rationale if first_skill.rationale else f"{next_skill_name} becerisi, hedef rolün için kritik öneme sahip."
+            if weeks[0].skills:
+                first_skill = weeks[0].skills[0]
+                next_skill_name = first_skill.display_name
+                next_skill_hours = first_skill.estimated_hours
+                next_skill_explanation = first_skill.rationale if first_skill.rationale else f"{next_skill_name} becerisi, hedef rolün için kritik öneme sahip."
 
         render_ai_recommendation_panel(
             skill_name=next_skill_name,
@@ -1418,7 +1412,10 @@ def render_dashboard_page(
         )
 
         if st.button("🚀 Başla", use_container_width=True, key="ai_start_btn"):
-            st.info(f"'{next_skill_name}' öğrenme modülü yakında aktif olacak!")
+            if not weeks:
+                st.info("Önce **Hedef ve Profil** sayfasından yol haritanı oluşturmalısın.")
+            else:
+                st.info(f"'{next_skill_name}' öğrenme modülü yakında aktif olacak!")
 
     render_section_header("⚡", "Hızlı Erişim")
 
