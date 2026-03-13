@@ -36,7 +36,7 @@ def init_session_state() -> None:
     if "is_authenticated" not in st.session_state:
         st.session_state["is_authenticated"] = False
     if "has_onboarded" not in st.session_state:
-        st.session_state["has_onboarded"] = False
+        st.session_state["has_onboarded"] = True
     if "login_error" not in st.session_state:
         st.session_state["login_error"] = ""
     if "user_name" not in st.session_state:
