@@ -26,6 +26,14 @@ class Skill:
 
 
 @dataclass
+class Module:
+    id: str
+    skill_id: str
+    title: str
+    order: int
+
+
+@dataclass
 class RoleSkillRequirement:
     required_level: int  # 1–5
     weight: float        # importance weight for role
@@ -102,9 +110,28 @@ def load_roles(skills: Dict[str, Skill]) -> Dict[str, Role]:
     return roles
 
 
+def load_modules(skills: Dict[str, Skill]) -> List[Module]:
+    """Load modules.json; each module must reference an existing skill."""
+    raw = load_json(DATA_DIR / "modules.json")
+    modules: List[Module] = []
+    for item in raw:
+        skill_id = item["skill_id"]
+        if skill_id not in skills:
+            raise DataLoadError(f"Modül tanımsız beceriye referans veriyor: {skill_id}")
+        mod = Module(
+            id=item["id"],
+            skill_id=skill_id,
+            title=item["title"],
+            order=int(item["order"]),
+        )
+        modules.append(mod)
+    return sorted(modules, key=lambda m: (m.skill_id, m.order))
+
+
 def load_all() -> Dict[str, Any]:
     """Convenience loader used by the app."""
     skills = load_skills()
     roles = load_roles(skills)
-    return {"skills": skills, "roles": roles}
+    modules = load_modules(skills)
+    return {"skills": skills, "roles": roles, "modules": modules}
 

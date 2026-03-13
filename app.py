@@ -45,6 +45,12 @@ def init_session_state() -> None:
         st.session_state["user_avatar"] = None
     if "career_goal" not in st.session_state:
         st.session_state["career_goal"] = ""
+    if "growth_stage" not in st.session_state:
+        st.session_state["growth_stage"] = None
+    if "growth_stage_description" not in st.session_state:
+        st.session_state["growth_stage_description"] = None
+    if "active_plan_name" not in st.session_state:
+        st.session_state["active_plan_name"] = None
     if "show_profile_edit" not in st.session_state:
         st.session_state["show_profile_edit"] = False
     if "show_avatar_panel" not in st.session_state:
@@ -68,6 +74,7 @@ def main() -> None:
     data = load_all()
     skills = data["skills"]
     roles = data["roles"]
+    modules = data.get("modules", [])
 
     # 1) Giriş ekranı
     if not st.session_state.get("is_authenticated", False):
@@ -104,7 +111,7 @@ def main() -> None:
             duration_weeks,
             current_levels,
             submitted,
-        ) = render_onboarding_page(roles, skills)
+        ) = render_onboarding_page(roles, skills, modules)
 
         if submitted:
             st.session_state["selected_role_id"] = selected_role_id
@@ -177,10 +184,10 @@ def main() -> None:
         avatar_content = f'<span style="color: #f1f5f9; font-weight: 700;">{initials}</span>'
 
     role_text = role_display_name or "Henüz seçilmedi"
-    readiness_value = f"{readiness_pct}%" if readiness_pct is not None else "—"
-    progress_width = readiness_pct if readiness_pct is not None else 0
+    growth_stage = st.session_state.get("growth_stage")
+    growth_stage_description = st.session_state.get("growth_stage_description", "")
 
-    # Profile card with avatar - CSS and HTML
+    # Profile card with avatar - CSS and HTML (Growth Stage instead of readiness bar)
     profile_css = f"""
 <style>
 .yh-profile-card {{
@@ -241,39 +248,32 @@ def main() -> None:
 .yh-profile-role {{
     font-size: 0.8rem;
     color: {theme['primary']};
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.6rem;
 }}
-.yh-profile-readiness {{
-    background: rgba(15,23,42,0.5);
-    border-radius: 0.5rem;
-    padding: 0.6rem;
+.yh-profile-stage {{
+    background: linear-gradient(135deg, {theme['primary']}18, {theme['secondary']}12);
+    border: 1px solid {theme['primary']}44;
+    border-radius: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    text-align: left;
 }}
-.yh-profile-readiness-row {{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.4rem;
-}}
-.yh-profile-readiness-label {{
-    font-size: 0.7rem;
+.yh-profile-stage-label {{
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: #64748b;
+    margin-bottom: 0.2rem;
 }}
-.yh-profile-readiness-value {{
-    font-size: 0.8rem;
+.yh-profile-stage-name {{
+    font-size: 0.85rem;
     font-weight: 600;
     color: {theme['primary']};
 }}
-.yh-profile-progress {{
-    height: 4px;
-    background: rgba(51,65,85,0.5);
-    border-radius: 2px;
-    overflow: hidden;
-}}
-.yh-profile-progress-fill {{
-    height: 100%;
-    background: linear-gradient(90deg, {theme['primary']}, {theme['secondary']});
-    border-radius: 2px;
-    transition: width 0.3s ease;
+.yh-profile-stage-desc {{
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 0.35rem;
+    line-height: 1.35;
 }}
 /* Avatar edit button styling */
 .avatar-edit-trigger {{
@@ -310,7 +310,25 @@ def main() -> None:
 """
     st.sidebar.markdown(profile_css, unsafe_allow_html=True)
 
-    # Profile card HTML
+    # Profile card HTML (Growth Stage badge; no percentage readiness)
+    active_plan = st.session_state.get("active_plan_name") or (f"{role_display_name} Yol Haritası" if role_display_name else "—")
+    stage_block = ""
+    if growth_stage:
+        stage_block = f"""
+    <div class="yh-profile-stage">
+        <div class="yh-profile-stage-label">Gelişim Aşaması</div>
+        <div class="yh-profile-stage-name">{growth_stage}</div>
+        <div class="yh-profile-stage-desc">{growth_stage_description}</div>
+    </div>
+"""
+    else:
+        stage_block = f"""
+    <div class="yh-profile-stage">
+        <div class="yh-profile-stage-label">Gelişim Aşaması</div>
+        <div class="yh-profile-stage-name">—</div>
+        <div class="yh-profile-stage-desc">Hedef ve Profil sayfasından beceri durumunu işaretle.</div>
+    </div>
+"""
     profile_html = f"""
 <div class="yh-profile-card">
     <div class="yh-avatar-container">
@@ -319,15 +337,8 @@ def main() -> None:
     </div>
     <div class="yh-profile-name">{user_name}</div>
     <div class="yh-profile-role">{role_text}</div>
-    <div class="yh-profile-readiness">
-        <div class="yh-profile-readiness-row">
-            <span class="yh-profile-readiness-label">Hazırbulunuşluk</span>
-            <span class="yh-profile-readiness-value">{readiness_value}</span>
-        </div>
-        <div class="yh-profile-progress">
-            <div class="yh-profile-progress-fill" style="width: {progress_width}%;"></div>
-        </div>
-    </div>
+    <div class="yh-profile-meta" style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Aktif Plan — {active_plan}</div>
+    {stage_block}
 </div>
 """
     st.sidebar.markdown(profile_html, unsafe_allow_html=True)
@@ -426,6 +437,9 @@ def main() -> None:
         st.session_state["user_name"] = "Kullanıcı"
         st.session_state["user_avatar"] = None
         st.session_state["career_goal"] = ""
+        st.session_state["growth_stage"] = None
+        st.session_state["growth_stage_description"] = None
+        st.session_state["active_plan_name"] = None
         st.session_state["show_profile_edit"] = False
         st.session_state["show_avatar_panel"] = False
         st.session_state["avatar_path"] = None
@@ -433,11 +447,11 @@ def main() -> None:
         st.rerun()
 
     if page == "Kontrol Paneli":
-        render_dashboard_page(roles, skills)
+        render_dashboard_page(roles, skills, modules)
 
     elif page == "Hedef ve Profil":
         new_role_id, weekly_hours, duration_weeks, current_levels, submitted = render_profile_page(
-            roles, skills
+            roles, skills, modules
         )
 
         st.session_state["selected_role_id"] = new_role_id
@@ -465,6 +479,11 @@ def main() -> None:
             st.session_state["analysis_result"] = gap_result
             st.session_state["weekly_plan"] = weeks
             st.session_state["explanation"] = explanation
+            from src.onboarding_ui import get_growth_stage_from_levels
+            _, growth_label, growth_desc = get_growth_stage_from_levels(current_levels)
+            st.session_state["growth_stage"] = growth_label
+            st.session_state["growth_stage_description"] = growth_desc
+            st.session_state["active_plan_name"] = f"{role.display_name} Yol Haritası"
 
             st.success("Yol haritanız oluşturuldu! Yol Haritası sayfasına yönlendiriliyorsunuz...")
             st.session_state["current_page"] = "Öğrenme Yol Haritası"

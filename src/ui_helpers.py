@@ -7,8 +7,15 @@ import plotly.express as px
 import streamlit as st
 
 from .algorithm import GapAnalysisResult, gaps_to_table
-from .data_loader import Skill, Role
+from .data_loader import Skill, Role, Module
 from .planner import WeekPlan, weekly_plan_to_table
+from .module_progress import (
+    MODULE_STATES,
+    get_module_state,
+    get_category_progress,
+    module_progress_to_skill_levels,
+    get_overall_readiness_percentage,
+)
 from .visual_roadmap import render_visual_roadmap
 from .design_system import (
     inject_global_styles,
@@ -127,13 +134,27 @@ def _render_skill_radar_chart(
     st.caption(f"📊 Ortalama beceri seviyesi: {avg_level:.1f}/5 — Slider'ları hareket ettirdiğinde grafik otomatik güncellenir.")
 
 
+def _module_state_label(state: str) -> str:
+    """Turkish label for module state."""
+    labels = {
+        "not_started": "Başlamadım",
+        "in_progress": "Devam ediyorum",
+        "completed": "Tamamladım",
+        "applied": "Uyguladım",
+    }
+    return labels.get(state, state)
+
+
 def render_profile_page(
     roles: Dict[str, Role],
     skills: Dict[str, Skill],
+    modules: List[Module] | None = None,
 ) -> Tuple[str, float, int, Dict[str, int], bool]:
     """
-    Premium AI Career Setup Experience - SaaS-grade guided skill assessment.
+    Premium AI Career Setup Experience - module-based progress (no sliders).
     """
+    if modules is None:
+        modules = []
     role_options = {r.display_name: r.id for r in roles.values()}
     default_role_name = sorted(role_options.keys())[0]
 
@@ -877,21 +898,16 @@ def render_profile_page(
 </div>
 """, unsafe_allow_html=True)
 
-    # Group skills by category FIRST to calculate readiness
-    skill_categories: Dict[str, List[Tuple[str, Skill]]] = {}
-    for skill_id in selected_role.skills.keys():
-        skill = skills[skill_id]
-        category = skill.category
-        if category not in skill_categories:
-            skill_categories[category] = []
-        skill_categories[category].append((skill_id, skill))
+    role_skill_ids = list(selected_role.skills.keys())
+    # Module-based readiness when modules exist
+    if modules:
+        readiness_pct = int(get_overall_readiness_percentage(modules, role_skill_ids, st.session_state))
+    else:
+        total_skills = len(selected_role.skills)
+        total_current = sum(st.session_state.get(f"skill_{sid}", 2) for sid in role_skill_ids)
+        max_possible = total_skills * 5
+        readiness_pct = int((total_current / max_possible) * 100) if max_possible > 0 else 0
 
-    # Calculate initial readiness
-    total_skills = len(selected_role.skills)
-    total_current = sum(st.session_state.get(f"skill_{sid}", 2) for sid in selected_role.skills.keys())
-    max_possible = total_skills * 5
-    readiness_pct = int((total_current / max_possible) * 100) if max_possible > 0 else 0
-    
     # Readiness hint based on level
     if readiness_pct < 25:
         hint_text = "Başlangıç seviyesindesin. Her yolculuk bir adımla başlar! Düzenli çalışmayla kısa sürede temel yapını güçlendireceksin."
@@ -934,40 +950,52 @@ def render_profile_page(
 </div>
 """, unsafe_allow_html=True)
 
-    # ===== SECTION 4: SKILL ASSESSMENT GRID =====
+    # ===== SECTION 4: MODULE-BASED PROGRESS (or legacy skill grid) =====
     category_icons = {
         "Temel Beceriler": "🧠",
         "Programlama": "💻",
         "Veri ve Matematik": "📈",
-        "AI Temelleri": "🤖",
+        "Matematik": "📐",
+        "Veri Bilimi": "📊",
+        "Yapay Zeka": "🤖",
         "Frontend": "🎨",
         "Genel": "📚",
+        "Profesyonel Pratikler": "📂",
+        "Veri Tabanları": "🗄️",
     }
-
     category_descriptions = {
         "Temel Beceriler": "Problem çözme ve analitik düşünce",
         "Programlama": "Kod yazma ve geliştirme becerileri",
-        "Veri ve Matematik": "Veri analizi ve matematiksel temeller",
-        "AI Temelleri": "Yapay zeka ve makine öğrenmesi",
+        "Veri Bilimi": "Veri analizi ve görselleştirme",
+        "Matematik": "Matematiksel temeller",
+        "Yapay Zeka": "Yapay zeka ve makine öğrenmesi",
         "Frontend": "Kullanıcı arayüzü geliştirme",
         "Genel": "Genel teknik beceriler",
+        "Profesyonel Pratikler": "Versiyon kontrol ve pratikler",
+        "Veri Tabanları": "SQL ve veri tabanı temelleri",
     }
 
-    skill_icons = {
-        "python": "🐍", "git": "📂", "sql": "🗄️", "statistics": "📊",
-        "data_analysis": "📉", "data_viz": "📈", "ml_basics": "🤖",
-        "deep_learning": "🧠", "html_css": "🎨", "javascript": "⚡",
-        "react": "⚛️", "apis": "🔌", "problem_solving": "🧩",
-        "prompt_eng": "💬", "linear_algebra": "📐", "pandas": "🐼",
-    }
+    if modules:
+        # Group modules by category (only skills in selected role)
+        role_skill_set = set(selected_role.skills.keys())
+        category_modules: Dict[str, List[Module]] = {}
+        for m in modules:
+            if m.skill_id not in role_skill_set:
+                continue
+            skill = skills.get(m.skill_id)
+            cat = skill.category if skill else "Genel"
+            if cat not in category_modules:
+                category_modules[cat] = []
+            category_modules[cat].append(m)
+        for cat in category_modules:
+            category_modules[cat].sort(key=lambda x: (x.order, x.id))
 
-    current_levels: Dict[str, int] = {}
+        for category, cat_modules in category_modules.items():
+            cat_icon = category_icons.get(category, "📌")
+            cat_desc = category_descriptions.get(category, "")
+            cat_pct = get_category_progress(category, modules, skills, st.session_state)
 
-    for category, category_skills in skill_categories.items():
-        cat_icon = category_icons.get(category, "📌")
-        cat_desc = category_descriptions.get(category, "")
-
-        st.markdown(f"""
+            st.markdown(f"""
 <div class="category-container">
     <div class="category-header">
         <div class="category-icon">{cat_icon}</div>
@@ -975,66 +1003,92 @@ def render_profile_page(
             <div class="category-title">{category}</div>
             <div class="category-desc">{cat_desc}</div>
         </div>
-        <div class="category-badge">{len(category_skills)} beceri</div>
+        <div class="category-badge">{cat_pct:.0f}% · {len(cat_modules)} modül</div>
+    </div>
+    <div class="readiness-bar-bg" style="margin-top: 0.8rem; height: 8px;">
+        <div class="readiness-bar-fill" style="width: {cat_pct}%; height: 8px;"></div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-        # Two-column grid for skills
-        skill_cols = st.columns(2)
-        for idx, (skill_id, skill) in enumerate(category_skills):
-            col_idx = idx % 2
-            with skill_cols[col_idx]:
-                current_value = st.session_state.get(f"skill_{skill_id}", 2)
-                progress_pct = (current_value / 5) * 100
-                skill_icon = skill_icons.get(skill_id, "📌")
-                level_label = _get_level_label(current_value)
-                
-                helper_texts = {
-                    0: "Henüz başlamadın",
-                    1: "Temel kavramları öğreniyorsun", 
-                    2: "Pratik yapıyorsun",
-                    3: "Orta düzeyde yetkinsin",
-                    4: "İleri seviyedesin",
-                    5: "Uzman seviyesindesin",
-                }
-                helper_text = helper_texts.get(current_value, "")
-
-                st.markdown(f"""
+            mod_cols = st.columns(2)
+            for idx, mod in enumerate(cat_modules):
+                col_idx = idx % 2
+                with mod_cols[col_idx]:
+                    skill = skills.get(mod.skill_id)
+                    skill_name = skill.display_name if skill else mod.skill_id
+                    current_state = get_module_state(mod.id, st.session_state)
+                    st.markdown(f"""
 <div class="skill-card">
     <div class="skill-header">
         <div class="skill-info">
-            <div class="skill-icon">{skill_icon}</div>
-            <div class="skill-name">{skill.display_name}</div>
+            <div class="skill-name">{mod.title}</div>
         </div>
-        <div class="skill-difficulty">Zorluk {skill.difficulty}/5</div>
     </div>
-    <div class="skill-level-row">
-        <span class="skill-level-label">Mevcut Seviye</span>
-        <span class="skill-level-value">{current_value}/5 · {level_label}</span>
-    </div>
-    <div class="skill-progress-bg">
-        <div class="skill-progress-fill" style="width: {progress_pct}%;"></div>
-    </div>
-    <div class="skill-helper">{helper_text}</div>
+    <div class="skill-helper">Beceri: {skill_name}</div>
 </div>
 """, unsafe_allow_html=True)
-                
-                level = st.slider(
-                    f"{skill.display_name}",
-                    min_value=0,
-                    max_value=5,
-                    value=current_value,
-                    key=f"skill_{skill_id}",
-                    label_visibility="collapsed",
-                )
-                current_levels[skill_id] = level
+                    st.selectbox(
+                        "Durum",
+                        options=MODULE_STATES,
+                        index=MODULE_STATES.index(current_state) if current_state in MODULE_STATES else 0,
+                        key=f"module_{mod.id}",
+                        label_visibility="collapsed",
+                        format_func=_module_state_label,
+                    )
+
+        current_levels = module_progress_to_skill_levels(modules, role_skill_ids, st.session_state)
+    else:
+        # Legacy: skill sliders when no modules
+        skill_categories_legacy: Dict[str, List[Tuple[str, Skill]]] = {}
+        for skill_id in selected_role.skills.keys():
+            skill = skills[skill_id]
+            cat = skill.category
+            if cat not in skill_categories_legacy:
+                skill_categories_legacy[cat] = []
+            skill_categories_legacy[cat].append((skill_id, skill))
+        skill_icons = {
+            "python_basics": "🐍", "git_basics": "📂", "sql_basics": "🗄️",
+            "statistics_fundamentals": "📊", "data_analysis": "📉", "data_visualization": "📈",
+            "machine_learning": "🤖", "deep_learning": "🧠", "html_css": "🎨",
+            "javascript_basics": "⚡", "react_basics": "⚛️", "apis_rest": "🔌",
+            "problem_solving": "🧩", "prompt_engineering": "💬",
+            "linear_algebra": "📐", "pandas_library": "🐼",
+        }
+        current_levels = {}
+        for category, category_skills in skill_categories_legacy.items():
+            cat_icon = category_icons.get(category, "📌")
+            st.markdown(f"""
+<div class="category-container">
+    <div class="category-header">
+        <div class="category-icon">{cat_icon}</div>
+        <div class="category-info">
+            <div class="category-title">{category}</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+            skill_cols = st.columns(2)
+            for idx, (skill_id, skill) in enumerate(category_skills):
+                with skill_cols[idx % 2]:
+                    cv = st.session_state.get(f"skill_{skill_id}", 2)
+                    st.markdown(f"""
+<div class="skill-card">
+    <div class="skill-header">
+        <div class="skill-name">{skill.display_name}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+                    current_levels[skill_id] = st.slider(
+                        skill.display_name, 0, 5, cv, key=f"skill_{skill_id}",
+                        label_visibility="collapsed",
+                    )
 
     # ===== SECTION 5: AI INSIGHT =====
     skill_values_list = []
     for skill_id in selected_role.skills.keys():
         skill = skills[skill_id]
-        val = current_levels.get(skill_id, st.session_state.get(f"skill_{skill_id}", 2))
+        val = current_levels.get(skill_id, 0)
         skill_values_list.append((skill_id, skill.display_name, val))
 
     skill_values_list.sort(key=lambda x: x[2])
@@ -1082,214 +1136,28 @@ def render_profile_page(
 def render_onboarding_page(
     roles: Dict[str, Role],
     skills: Dict[str, Skill],
+    modules: List[Module] | None = None,
 ) -> Tuple[str, float, int, Dict[str, int], bool]:
     """
-    Premium onboarding interface with grouped skill cards.
+    Premium career journey entry experience (profile panel, growth stage, chip-based skills).
+    Delegates to onboarding_ui.
     """
-    role_options = {r.display_name: r.id for r in roles.values()}
-    default_role_name = sorted(role_options.keys())[0]
-
-    # Tema için varsayılan rol (görünür kontrollerden önce tema seçimi)
-    selected_role_id = role_options[default_role_name]
-    selected_role = roles[selected_role_id]
-    theme = get_role_theme(selected_role_id)
-
-    inject_global_styles(selected_role_id)
-
-    # Onboarding CSS
-    onboard_css = f"""
-<style>
-.onboard-hero {{
-    background: linear-gradient(135deg, {theme['gradient_start']} 0%, {theme['gradient_end']} 100%);
-    border: 1px solid {theme['primary']}44;
-    border-radius: 1rem;
-    padding: 1.5rem 2rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-}}
-.onboard-hero-icon {{
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-}}
-.onboard-hero-title {{
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 0.3rem;
-}}
-.onboard-hero-subtitle {{
-    font-size: 0.95rem;
-    color: #cbd5e1;
-    max-width: 500px;
-    margin: 0 auto;
-}}
-.onboard-settings {{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}}
-@media (max-width: 768px) {{
-    .onboard-settings {{
-        grid-template-columns: 1fr;
-    }}
-}}
-.onboard-setting {{
-    background: rgba(15,23,42,0.8);
-    border: 1px solid rgba(51,65,85,0.5);
-    border-radius: 0.8rem;
-    padding: 1rem;
-}}
-.onboard-setting-icon {{
-    font-size: 1.3rem;
-    margin-bottom: 0.3rem;
-}}
-.onboard-setting-label {{
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #64748b;
-    margin-bottom: 0.2rem;
-}}
-.onboard-skill-section {{
-    margin-bottom: 1rem;
-}}
-.onboard-skill-header {{
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.8rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid rgba(51,65,85,0.4);
-}}
-.onboard-skill-icon {{
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, {theme['gradient_start']}, {theme['gradient_end']});
-    border-radius: 0.4rem;
-    font-size: 0.9rem;
-}}
-.onboard-skill-title {{
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #e2e8f0;
-}}
-.onboard-skill-grid {{
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.8rem;
-}}
-@media (max-width: 900px) {{
-    .onboard-skill-grid {{
-        grid-template-columns: 1fr;
-    }}
-}}
-.onboard-skill-card {{
-    background: rgba(15,23,42,0.85);
-    border: 1px solid rgba(51,65,85,0.5);
-    border-radius: 0.7rem;
-    padding: 0.8rem 1rem;
-}}
-.onboard-skill-name {{
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #f1f5f9;
-    margin-bottom: 0.3rem;
-}}
-.onboard-skill-level {{
-    font-size: 0.75rem;
-    color: #94a3b8;
-}}
-.onboard-cta {{
-    margin-top: 1.5rem;
-    text-align: center;
-    padding: 1.2rem;
-    background: rgba(15,23,42,0.7);
-    border: 1px solid rgba(51,65,85,0.4);
-    border-radius: 0.9rem;
-}}
-.onboard-cta-text {{
-    font-size: 0.9rem;
-    color: #94a3b8;
-    margin-bottom: 0.8rem;
-}}
-</style>
-"""
-    st.markdown(onboard_css, unsafe_allow_html=True)
-
-    # Hero
-    st.markdown(f"""
-<div class="onboard-hero">
-    <div class="onboard-hero-icon">🚀</div>
-    <div class="onboard-hero-title">Kariyer Yolculuğuna Başla</div>
-    <div class="onboard-hero-subtitle">Hedef rolünü ve mevcut seviyeni belirle. Bu bilgiler kişiselleştirilmiş yol haritanın temelini oluşturur.</div>
-</div>
-""", unsafe_allow_html=True)
-
-    # Settings Cards
-    render_section_header("⚙️", "Temel Ayarlar")
-    set_col1, set_col2, set_col3 = st.columns(3)
-
-    with set_col1:
-        st.markdown('<div class="onboard-setting"><div class="onboard-setting-icon">🎯</div><div class="onboard-setting-label">Hedef Rol</div></div>', unsafe_allow_html=True)
-        role_name = st.selectbox("Rol", options=list(role_options.keys()), index=0, label_visibility="collapsed", key="onboard_role")
-
-    with set_col2:
-        st.markdown('<div class="onboard-setting"><div class="onboard-setting-icon">⏰</div><div class="onboard-setting-label">Haftalık Saat</div></div>', unsafe_allow_html=True)
-        weekly_hours = st.number_input("Saat", min_value=2.0, max_value=40.0, value=8.0, step=1.0, label_visibility="collapsed", key="onboard_hours")
-
-    with set_col3:
-        st.markdown('<div class="onboard-setting"><div class="onboard-setting-icon">📅</div><div class="onboard-setting-label">Plan Süresi</div></div>', unsafe_allow_html=True)
-        duration_weeks = st.number_input("Hafta", min_value=1, max_value=12, value=4, step=1, label_visibility="collapsed", key="onboard_weeks")
-
-    selected_role_id = role_options[role_name]
-    selected_role = roles[selected_role_id]
-
-    # Skill Assessment
-    st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
-    render_section_header("📊", "Beceri Seviyelerini Belirle")
-    st.caption("0 = hiç bilmiyorum, 5 = uzman seviyesinde")
-
-    skill_categories: Dict[str, List[Tuple[str, Skill]]] = {}
-    for skill_id in selected_role.skills.keys():
-        skill = skills[skill_id]
-        cat = skill.category
-        if cat not in skill_categories:
-            skill_categories[cat] = []
-        skill_categories[cat].append((skill_id, skill))
-
-    cat_icons = {"Temel Beceriler": "🧠", "Programlama": "💻", "Veri ve Matematik": "📈", "AI Temelleri": "🤖", "Frontend": "🎨", "Genel": "📚"}
-    current_levels: Dict[str, int] = {}
-
-    for cat, cat_skills in skill_categories.items():
-        icon = cat_icons.get(cat, "📌")
-        st.markdown(f'<div class="onboard-skill-header"><div class="onboard-skill-icon">{icon}</div><div class="onboard-skill-title">{cat}</div></div>', unsafe_allow_html=True)
-
-        cols = st.columns(2)
-        for idx, (skill_id, skill) in enumerate(cat_skills):
-            with cols[idx % 2]:
-                st.markdown(f'<div class="onboard-skill-card"><div class="onboard-skill-name">{skill.display_name}</div><div class="onboard-skill-level">Zorluk: {skill.difficulty}/5</div></div>', unsafe_allow_html=True)
-                current_levels[skill_id] = st.slider(skill.display_name, 0, 5, 2, key=f"onboard_skill_{skill_id}", label_visibility="collapsed")
-
-    # CTA
-    st.markdown('<div class="onboard-cta"><div class="onboard-cta-text">Hazır olduğunda aşağıdaki butona tıkla</div></div>', unsafe_allow_html=True)
-    submitted = st.button("🎯 Devam Et ve Yol Haritası Oluştur", use_container_width=True, type="primary")
-
-    return selected_role_id, float(weekly_hours), int(duration_weeks), current_levels, submitted
+    from .onboarding_ui import render_onboarding_page as render_onboarding_impl
+    return render_onboarding_impl(roles, skills, modules)
 
 
 def render_dashboard_page(
     roles: Dict[str, Role],
     skills: Dict[str, Skill],
+    modules: List[Module] | None = None,
 ) -> None:
     """
-    Premium personalized dashboard with welcome section, AI recommendations, and career goals.
+    Premium personalized dashboard with welcome, category progress, AI recommendations, career goals.
     """
     from streamlit import session_state as ss
 
+    if modules is None:
+        modules = []
     analysis_result: GapAnalysisResult | None = ss.get("analysis_result")
     weeks: List[WeekPlan] | None = ss.get("weekly_plan")
     selected_role_id = ss.get("selected_role_id")
@@ -1342,6 +1210,32 @@ def render_dashboard_page(
                 career_goal = "Hedef rolümü belirleyip kariyer yolculuğuma başlamak."
 
         render_career_goal_card(career_goal)
+
+        # Category progress from module completion (when modules exist)
+        if modules and selected_role_id and selected_role_id in roles:
+            role_skill_ids = list(roles[selected_role_id].skills.keys())
+            role_skill_set = set(role_skill_ids)
+            category_modules: Dict[str, List[Module]] = {}
+            for m in modules:
+                if m.skill_id not in role_skill_set:
+                    continue
+                skill = skills.get(m.skill_id)
+                cat = skill.category if skill else "Genel"
+                if cat not in category_modules:
+                    category_modules[cat] = []
+                category_modules[cat].append(m)
+            if category_modules:
+                cat_icons = {"Temel Beceriler": "🧠", "Programlama": "💻", "Veri ve Matematik": "📈", "Matematik": "📐", "Veri Bilimi": "📊", "Yapay Zeka": "🤖", "Frontend": "🎨", "Genel": "📚", "Profesyonel Pratikler": "📂", "Veri Tabanları": "🗄️"}
+                overall_pct = int(get_overall_readiness_percentage(modules, role_skill_ids, ss))
+                st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
+                st.markdown("**📊 Kategori İlerlemesi** (modül durumlarına göre)")
+                for cat in sorted(category_modules.keys()):
+                    cat_pct = get_category_progress(cat, modules, skills, ss)
+                    icon = cat_icons.get(cat, "📌")
+                    st.markdown(f"**{icon} {cat}** — {cat_pct:.0f}%")
+                    st.progress(cat_pct / 100.0)
+                st.caption(f"Genel hazırlık: **{overall_pct}%**")
+                st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
 
         weekly_progress = "Henüz oluşturulmuş bir haftalık plan bulunamadı."
         if weeks:
