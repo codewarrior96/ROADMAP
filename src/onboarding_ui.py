@@ -4,12 +4,20 @@ Modular render functions, growth stage (no readiness %), chip-based skill levels
 """
 from __future__ import annotations
 
+import html as html_module
 from typing import Dict, List, Tuple, Any
 
 import streamlit as st
 
 from .data_loader import Skill, Role
 from .design_system import get_role_theme, generate_avatar_initials, inject_global_styles, render_section_header
+
+
+def _escape(text: str) -> str:
+    """Escape for safe injection into HTML; prevents raw tags showing as text."""
+    if not text:
+        return ""
+    return html_module.escape(str(text), quote=True)
 
 
 # ---- Discrete skill level options (no sliders) ----
@@ -143,11 +151,10 @@ def render_onboarding_profile_panel(
     css = f"""
 <style>
 .yh-onboard-profile {{
-    background: linear-gradient(165deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.9) 100%);
-    border: 1px solid rgba(51,65,85,0.6);
-    border-radius: 1rem;
-    padding: 1.5rem 1.2rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    background: rgba(30,41,59,0.5);
+    border: 1px solid rgba(71,85,105,0.45);
+    border-radius: 12px;
+    padding: 1.25rem 1.2rem;
 }}
 .yh-onboard-avatar {{
     width: 64px;
@@ -157,9 +164,9 @@ def render_onboarding_profile_panel(
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    margin: 0 auto 1rem auto;
-    background: linear-gradient(135deg, {theme['gradient_start']}, {theme['gradient_end']});
-    border: 2px solid {theme['primary']}66;
+    margin: 0 auto 0.75rem auto;
+    background: {theme['gradient_start']};
+    border: 2px solid {theme['primary']}35;
     overflow: hidden;
 }}
 .yh-onboard-avatar img {{ width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }}
@@ -167,9 +174,9 @@ def render_onboarding_profile_panel(
 .yh-onboard-meta {{ font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.35rem; }}
 .yh-onboard-meta-value {{ color: #e2e8f0; font-weight: 600; }}
 .yh-onboard-stage {{
-    background: linear-gradient(135deg, {theme['primary']}22, {theme['secondary']}18);
-    border: 1px solid {theme['primary']}55;
-    border-radius: 0.75rem;
+    background: linear-gradient(135deg, {theme['primary']}18, {theme['secondary']}12);
+    border: 1px solid {theme['primary']}35;
+    border-radius: 8px;
     padding: 0.75rem 1rem;
     margin: 1rem 0;
 }}
@@ -181,18 +188,24 @@ def render_onboarding_profile_panel(
 """
     st.markdown(css, unsafe_allow_html=True)
 
+    safe_name = _escape(user_name)
+    safe_role = _escape(role_display_name)
+    safe_plan = _escape(active_plan_name)
+    safe_stage = _escape(growth_stage_label)
+    safe_stage_desc = _escape(growth_stage_description)
+    safe_summary = _escape(profile_summary)
     html = f"""
 <div class="yh-onboard-profile">
     <div class="yh-onboard-avatar">{avatar_content}</div>
-    <div class="yh-onboard-name">{user_name}</div>
-    <div class="yh-onboard-meta">Ana Kariyer Hedefi <span class="yh-onboard-meta-value">— {role_display_name}</span></div>
-    <div class="yh-onboard-meta">Aktif Plan <span class="yh-onboard-meta-value">— {active_plan_name}</span></div>
+    <div class="yh-onboard-name">{safe_name}</div>
+    <div class="yh-onboard-meta">Ana Kariyer Hedefi <span class="yh-onboard-meta-value">— {safe_role}</span></div>
+    <div class="yh-onboard-meta">Aktif Plan <span class="yh-onboard-meta-value">— {safe_plan}</span></div>
     <div class="yh-onboard-stage">
         <div class="yh-onboard-stage-label">Gelişim Aşaması</div>
-        <div class="yh-onboard-stage-name">{growth_stage_label}</div>
-        <div class="yh-onboard-stage-desc">{growth_stage_description}</div>
+        <div class="yh-onboard-stage-name">{safe_stage}</div>
+        <div class="yh-onboard-stage-desc">{safe_stage_desc}</div>
     </div>
-    <div class="yh-onboard-summary">{profile_summary}</div>
+    <div class="yh-onboard-summary">{safe_summary}</div>
 </div>
 """
     st.markdown(html, unsafe_allow_html=True)
@@ -267,19 +280,18 @@ def render_onboarding_hero_card(
 <style>
 .yh-onboard-hero {{
     background: linear-gradient(135deg, {theme['gradient_start']} 0%, {theme['gradient_end']} 100%);
-    border: 1px solid {theme['primary']}44;
-    border-radius: 1.25rem;
-    padding: 2rem 2.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    border: 1px solid {theme['primary']}30;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
 }}
-.yh-onboard-hero-title {{ font-size: 1.6rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.5rem; }}
-.yh-onboard-hero-desc {{ font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; max-width: 580px; margin-bottom: 1.5rem; }}
-.yh-onboard-capsules {{ display: flex; flex-wrap: wrap; gap: 0.75rem; }}
+.yh-onboard-hero-title {{ font-size: 1.375rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.5rem; }}
+.yh-onboard-hero-desc {{ font-size: 0.9375rem; color: #94a3b8; line-height: 1.55; max-width: 560px; margin-bottom: 1.25rem; }}
+.yh-onboard-capsules {{ display: flex; flex-wrap: wrap; gap: 0.6rem; }}
 .yh-onboard-capsule {{
-    background: rgba(15,23,42,0.6);
-    border: 1px solid {theme['primary']}44;
-    border-radius: 0.75rem;
+    background: rgba(15,23,42,0.5);
+    border: 1px solid {theme['primary']}30;
+    border-radius: 8px;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
     color: #e2e8f0;
@@ -295,9 +307,9 @@ def render_onboarding_hero_card(
         Seçtiğin hedefe, mevcut becerilerine ve ayırabildiğin zamana göre kişiselleştirilmiş bir öğrenme planı hazırlıyoruz. Mevcut durumunu alan bazlı işaretle, sistem senin için en uygun rotayı üretsin.
     </div>
     <div class="yh-onboard-capsules">
-        <span class="yh-onboard-capsule"><strong>Hedef Rol</strong> {role_display_name}</span>
+        <span class="yh-onboard-capsule"><strong>Hedef Rol</strong> {_escape(role_display_name)}</span>
         <span class="yh-onboard-capsule"><strong>Plan Süresi</strong> {duration_weeks} Hafta</span>
-        <span class="yh-onboard-capsule"><strong>Haftalık Tempo</strong> {tempo_label}</span>
+        <span class="yh-onboard-capsule"><strong>Haftalık Tempo</strong> {_escape(tempo_label)}</span>
     </div>
 </div>
 """
@@ -324,13 +336,13 @@ def render_onboarding_skill_assessment(
 .yh-onboard-skill-section {{ margin-bottom: 1.5rem; }}
 .yh-onboard-skill-cat {{ font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }}
 .yh-onboard-skill-card {{
-    background: rgba(15,23,42,0.85);
-    border: 1px solid rgba(51,65,85,0.5);
-    border-radius: 0.85rem;
+    background: rgba(30,41,59,0.45);
+    border: 1px solid rgba(71,85,105,0.45);
+    border-radius: 12px;
     padding: 1rem 1.2rem;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.75rem;
 }}
-.yh-onboard-skill-card:hover {{ border-color: {theme['primary']}44; }}
+.yh-onboard-skill-card:hover {{ border-color: {theme['primary']}30; }}
 .yh-onboard-skill-title {{ font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.25rem; }}
 .yh-onboard-skill-desc {{ font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.6rem; }}
 .yh-onboard-level-options {{ display: flex; flex-wrap: wrap; gap: 0.4rem; }}
@@ -346,7 +358,7 @@ def render_onboarding_skill_assessment(
 }}
 .yh-onboard-chip.selected {{
     border-color: {theme['primary']};
-    background: {theme['primary']}22;
+    background: {theme['primary']}18;
     color: {theme['primary']};
 }}
 </style>
@@ -357,13 +369,15 @@ def render_onboarding_skill_assessment(
         cat_skills = skill_categories[category]
         group_label = CATEGORY_LABELS.get(category, category)
         icon = CATEGORY_ICONS.get(category, "📌")
-        st.markdown(f"<div class='yh-onboard-skill-cat'>{icon} {group_label}</div>", unsafe_allow_html=True)
+        safe_label = _escape(group_label)
+        st.markdown(f"<div class='yh-onboard-skill-cat'>{icon} {safe_label}</div>", unsafe_allow_html=True)
 
         for skill_id, skill in cat_skills:
             current_key = _get_selected_level_key(skill_id)
+            safe_skill_name = _escape(skill.display_name)
             st.markdown(f"""
 <div class="yh-onboard-skill-card">
-    <div class="yh-onboard-skill-title">{skill.display_name}</div>
+    <div class="yh-onboard-skill-title">{safe_skill_name}</div>
     <div class="yh-onboard-skill-desc">Mevcut durumunu seç</div>
 </div>
 """, unsafe_allow_html=True)

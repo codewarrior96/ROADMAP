@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Öğrenme Yolculuğu{% endblock %}
+{% block content %}
+<header class="journey-header">
+  <h1 class="journey-title">🗺️ Öğrenme Yolculuğu</h1>
+  <p class="journey-subtitle">Modülleri tamamlayarak ilerle. Sıradaki hedefe odaklan.</p>
+
+  <section class="progress-section" aria-label="Genel ilerleme">
+    <div class="progress-header">
+      <span class="progress-label">{{ progress.completed }}/{{ progress.total }} Tamamlandı — %{{ progress.percent }}</span>
+      <span class="progress-xp">✨ {{ total_xp }} XP</span>
+    </div>
+    <div class="progress-bar-track" role="progressbar" aria-valuenow="{{ progress.percent }}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar-fill" style="width: {{ progress.percent }}%;"></div>
+    </div>
+  </section>
+
+  <div class="gamification-row">
+    <div class="gamification-card">
+      <div class="gamification-icon" style="background: rgba(245, 158, 11, 0.2);">🏆</div>
+      <div>
+        <div class="gamification-label">Seviye</div>
+        <div class="gamification-value">
+          {% if progress.completed == 0 %}Başlangıç{% elif progress.completed <= 2 %}Öğrenci{% else %}İlerleyen{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="gamification-card">
+      <div class="gamification-icon" style="background: rgba(249, 115, 22, 0.2);">🔥</div>
+      <div>
+        <div class="gamification-label">Seri</div>
+        <div class="gamification-value">3 gün</div>
+      </div>
+    </div>
+    <div class="gamification-card" style="border-color: rgba(99, 102, 241, 0.3);">
+      <div class="gamification-icon" style="background: rgba(99, 102, 241, 0.2);">🎯</div>
+      <div>
+        <div class="gamification-label">Sıradaki Hedef</div>
+        <div class="gamification-value">{{ next_target.title | e if next_target else '—' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="estimated-section" aria-label="Tahmini tamamlanma">
+    <label for="daily-hours">Günlük çalışma (saat):</label>
+    <input type="number" id="daily-hours" name="daily_hours" min="0.5" max="12" step="0.5" value="2">
+    <span class="hint">📅 Tahmini tamamlanma haftası hesaplanacak</span>
+  </section>
+</header>
+
+<section class="timeline" aria-label="Yol haritası modülleri">
+  {% for module in modules %}
+  <article class="module-card {{ 'locked' if module.status == 'KİLİTLİ' else '' }} expanded" data-status="{{ module.status | e }}">
+    <div class="timeline-dot" aria-hidden="true"></div>
+    <div class="module-header" role="button" tabindex="0" aria-expanded="true" aria-controls="details-{{ module.id | e }}" id="card-{{ module.id | e }}" onclick="this.closest('.module-card').classList.toggle('expanded')">
+      <div style="flex: 1; min-width: 0;">
+        <h2 class="module-title">{{ module.title | e }}</h2>
+        <div class="module-meta">
+          {% if module.estimated_hours > 0 %}<span>⏱️ {{ module.estimated_hours }} saat</span>{% endif %}
+          {% if module.total_topics %}<span>{{ module.completed_topics }}/{{ module.total_topics }} ders</span>{% endif %}
+          {% if module.xp_points > 0 %}<span>✨ {{ module.xp_points }} XP</span>{% endif %}
+        </div>
+      </div>
+      <span class="badge badge-{{ module.status | e }}">{{ module.status | e }}</span>
+      <span class="module-expand" aria-hidden="true">▼</span>
+    </div>
+    <div class="module-details" id="details-{{ module.id | e }}" role="region" aria-labelledby="card-{{ module.id | e }}">
+      <p class="description">{{ module.description | e }}</p>
+
+      {% if module.topics %}
+      <div class="detail-section">
+        <div class="detail-label">Konular</div>
+        <ul class="topics-list">
+          {% for topic in module.topics %}
+          <li class="topic-item">
+            <span>{{ '✅' if topic.completed else '○' }}</span>
+            <span>{{ topic.title | e }}</span>
+            <span class="minutes">{{ topic.estimated_minutes }} dk</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% set sub_pct = (module.completed_topics / module.total_topics * 100) | int if module.total_topics else 0 %}
+        <div class="sub-progress">
+          <div class="sub-progress-bar">
+            <div class="sub-progress-fill" style="width: {{ sub_pct }}%;"></div>
+          </div>
+          <span class="sub-progress-label">%{{ sub_pct }} tamamlandı</span>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if module.reason %}
+      <div class="detail-section">
+        <div class="detail-label">Neden önemli?</div>
+        <div class="detail-text">{{ module.reason | e }}</div>
+      </div>
+      {% endif %}
+
+      {% if module.tips %}
+      <div class="detail-section">
+        <div class="detail-label">İpuçları</div>
+        <ul class="detail-list">
+          {% for tip in module.tips %}
+          <li>{{ tip | e }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if module.resources %}
+      <div class="detail-section">
+        <div class="detail-label">Kaynaklar</div>
+        <div class="resource-links">
+          {% for r in module.resources %}
+          <a href="{{ r.url | e }}" class="resource-link">{{ r.label | e }}</a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if module.status in ('AKTİF', 'SIRADAKİ') and not module.id in ['start', 'milestone'] %}
+      <div class="cta-row">
+        <a href="#basla" class="btn-primary">▶ Başla</a>
+        <a href="#quiz" class="btn-secondary">Mini Quiz</a>
+      </div>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}
