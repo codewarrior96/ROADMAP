@@ -150,4 +150,5 @@ YolHaritam-AI/
       myway-icon.png
 ```
 
-Bu yapı, üniversite projesi için sunulabilir, anlaşılır ve genişletilebilir bir MVP niteliğindedir.
+Bu yapı, küçük ama **üniversite dersi için sunulabilir** nitelikte, anlaşılır ve genişletilebilir bir MVP ortaya koymayı amaçlar.
+
