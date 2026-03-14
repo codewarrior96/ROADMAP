@@ -223,9 +223,6 @@ YolHaritam-AI/
 └── images/
 └── myway-icon.png
 
-yaml
-Kodu kopyala
-
 ---
 
 # Son Güncellemeler
