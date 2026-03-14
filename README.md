@@ -2,153 +2,260 @@
 
 **Rotanı keşfet, yolculuğunu planla.**
 
-YolHaritam, kullanıcıların kariyer ve öğrenme yolculuklarını planlamalarına yardımcı olan, yapay zeka destekli web tabanlı bir uygulamadır.
+YolHaritam, kullanıcıların kariyer ve öğrenme yolculuklarını planlamalarına yardımcı olan, yapay zeka destekli web tabanlı bir uygulamadır. Kullanıcının mevcut beceri seviyelerini ve hedef rolünü analiz ederek önkoşul ilişkilerini dikkate alan, sade ve uygulanabilir bir öğrenme yol haritası oluşturur.
 
 ---
 
-## Proje Hakkında
+# Proje Hakkında
 
-YolHaritam, üniversite öğrencileri ve kariyerine yön vermek isteyen bireyler için tasarlanmış **Türkçe bir öğrenme yol haritası uygulamasıdır**. Uygulama, kullanıcının mevcut beceri seviyelerini ve hedef rolünü alarak, önkoşul ilişkilerini de dikkate alan **4 haftalık, sade ve uygulanabilir bir öğrenme planı** üretir. Kullanıcı girişi, demo hesap, beceri boşluğu analizi ve haftalık yol haritası ile kariyer planlamayı kolaylaştırır.
+YolHaritam; üniversite öğrencileri, kariyerine yön vermek isteyen bireyler ve yapılandırılmış bir öğrenme planı arayan kullanıcılar için geliştirilmiş Türkçe bir öğrenme yol haritası uygulamasıdır.
 
----
+Uygulama, kullanıcının:
 
-## Teknolojiler
+- mevcut beceri seviyelerini
+- hedef rolünü
+- haftalık çalışma süresini
 
-- **Python 3.11+**
-- **Streamlit** – web arayüzü (tek sayfa uygulaması)
-- **HTML, CSS** – özelleştirilmiş login ve dashboard arayüzü (Syne, DM Sans fontları; koyu tema)
-- **pandas** – veri işleme ve tablo gösterimi
-- **Plotly** – etkileşimli grafikler (beceri seviyeleri)
-- **networkx** – beceri önkoşul grafı ve sıralama algoritması
-- **python-dotenv** – ortam değişkenleri (.env)
-- **openai (opsiyonel)** – geliştirilmiş Türkçe açıklama metinleri
-- **JSON** – rol ve beceri verileri (data/roles.json, data/skills.json)
+alarak beceri boşluklarını analiz eder ve buna uygun haftalık bir öğrenme planı üretir.
 
 ---
 
-## Özellikler
+# Özellikler
 
-- **Kullanıcı girişi** – E-posta ile giriş; Google, GitHub, Apple ile giriş butonları (UI)
-- **Demo hesap** – Hızlı deneme için demo@YolHaritam.com / 123456
-- **Şifre sıfırlama** – “Forgot password?” bağlantısı
-- **Hedef rol seçimi** – AI Engineer, Data Analyst, Frontend Developer
-- **Beceri boşluğu analizi** – Eksik beceriler, öncelik skorları, önkoşul uyarıları
-- **Öğrenme yolculuğu modülü** – 4 haftalık haftalık plan, mini görevler, tahmini süreler
-- **Modern ve responsive tasarım** – Koyu tema, cyan/teal renk paleti, animasyonlar, mobil uyumlu
+### Kullanıcı Girişi
+- E-posta ile giriş
+- Google, GitHub ve Apple ile giriş butonları (UI)
+- Modern login arayüzü
 
----
+### Demo Hesap
+E-posta: demo@YolHaritam.com
+Şifre: 123456
 
-## Son Güncellemeler
 
-- Login sayfası tasarımı güncellendi (grid arka plan, glow orblar, Syne/DM Sans fontları)
-- Logo boyutu ve görünümü optimize edildi (myway-icon.png, 200px genişlik)
-- Cyan glow efektleri eklendi (drop-shadow)
-- Logo–başlık arası boşluk ve container padding iyileştirildi
-- UI/UX iyileştirmeleri yapıldı (kart, form alanları, sosyal giriş butonları)
+### Hedef Rol Seçimi
+- AI Engineer
+- Data Analyst
+- Frontend Developer
 
----
+### Beceri Boşluğu Analizi
+- Eksik becerilerin belirlenmesi
+- Öncelik skorlarının hesaplanması
+- Önkoşul ilişkilerinin analizi
 
-## Kurulum
+### Öğrenme Yol Haritası
+- Haftalık plan
+- Mini görevler
+- Tahmini süreler
+- Mantıklı öğrenme sıralaması
 
-1. **Repoyu klonlayın**
-   ```bash
-   git clone <repo-url>
-   cd YolHaritam-AI
-   ```
-
-2. **Sanal ortam (önerilir) ve bağımlılıkları yükleyin**
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate   # Windows
-   pip install -r requirements.txt
-   ```
-
-3. **Uygulamayı başlatın**
-   ```bash
-   streamlit run app.py
-   ```
-
-Tarayıcıda açılan adresten (genelde http://localhost:8501) uygulamaya erişebilirsiniz. Demo giriş: **demo@YolHaritam.com** / **123456**.
-
-*(İsteğe bağlı)* Gelişmiş açıklamalar için `.env` dosyasına `OPENAI_API_KEY` ekleyebilirsiniz; yoksa uygulama deterministik modda çalışır.
+### Modern Arayüz
+- Koyu tema
+- Responsive tasarım
+- Özelleştirilmiş login ve dashboard
 
 ---
 
-## Ekran Görüntüleri
+# Teknolojiler
 
-*(Login sayfası ve dashboard ekran görüntüleri buraya eklenebilir.)*
+- Python 3.11+
+- Streamlit — web arayüzü
+- HTML / CSS — özel tasarım login ve dashboard
+- Pandas — veri işleme
+- Plotly — etkileşimli grafikler
+- NetworkX — beceri bağımlılık grafı
+- python-dotenv — ortam değişkenleri
+- OpenAI API (opsiyonel)
+- JSON veri yapıları
 
 ---
 
-## Geliştirici
+# Çözmeye Çalıştığı Problem
 
-- **Ad Soyad:** [İsminizi yazın]
-- **Üniversite:** [Üniversitenizi yazın]
+Birçok kullanıcı:
+
+- Hedef role ulaşmak için hangi becerilerin eksik olduğunu bilmiyor
+- Eksik becerileri hangi sırayla çalışması gerektiğini kestiremiyor
+- Haftalık çalışma süresine göre gerçekçi bir plan çıkaramıyor
+- Öğrenme planının mantığını anlayamıyor
+
+YolHaritam bu problemleri çözmek için bir **kariyer ve öğrenme planlama aracı** sunar.
 
 ---
 
-# Detaylı Proje Bilgisi
+# Hedef Kullanıcı Kitlesi
 
-### Çözmeye Çalıştığı Problem
-
-- Hedef role gitmek için hangi becerilerin eksik olduğunu bilmemek
-- Eksik becerileri **hangi sırayla** çalışması gerektiğini kestirememek
-- Haftalık çalışma süresine göre **gerçekçi** bir plan çıkaramamak
-- Planın arkasındaki mantığı ve **“Bu sıra neden böyle?”** sorusunun cevabını görememek
-
-YolHaritam, bu soruları cevaplayan bir karar destek aracı sunar.
-
-### Hedef Kullanıcı Kitlesi
-
-- Veri bilimi, yapay zeka, frontend gibi alanlara yönelmek isteyen **üniversite öğrencileri**
-- Bootcamp / online kurs programlarına hazırlanan katılımcılar
-- Kariyer geçişi yapmak isteyen junior geliştiriciler
+- Yapay zeka ve veri bilimi alanına yönelmek isteyen öğrenciler
+- Bootcamp veya online kurs katılımcıları
+- Kariyer geçişi yapmak isteyen geliştiriciler
 - Yapılandırılmış bir öğrenme planı arayan herkes
 
-### Algoritma Mantığı
+---
 
-1. **Rol gereksinimleri** – Her rol için gerekli beceriler, hedef seviye (1–5) ve rol ağırlığı tanımlıdır.
-2. **Kullanıcı profili** – Kullanıcı aynı beceri seti için kendi seviyesini 0–5 arası girer.
-3. **Boşluk hesabı** – `gap = required_level - current_level`; sadece `gap > 0` olan beceriler dikkate alınır.
-4. **Öncelik skoru** – Rol ağırlığı, önkoşul bonusu ve hızlı kazanım bonusu ile hesaplanır.
-5. **Bağımlılık grafı** – `networkx.DiGraph` ile önkoşul ilişkileri kurulur; topolojik sıralama ile liste elde edilir.
-6. **Haftalık planlama** – Haftalık çalışma saati ve beceri zorluğu ile tahmini süre; haftada en fazla 2 odak beceri.
+# Algoritma Mantığı
 
-### Uygulama Ekranları
+YolHaritam aşağıdaki adımlarla çalışır:
 
-- **Login** – Logo, e-posta/şifre, demo bilgisi, sosyal giriş butonları
-- **Hedef ve Profil** – Rol seçimi, haftalık saat, beceri slider’ları, “Yol Haritasını Oluştur”
-- **Beceri Boşluğu Analizi** – Eksik beceriler tablosu, Plotly grafiği, öncelik skorları
-- **Öğrenme Yol Haritası** – Haftalık plan (1–4. hafta), mini görevler, açıklamalar
+### 1. Rol Gereksinimleri
+Her rol için gerekli beceriler ve hedef seviyeler tanımlıdır.
 
-### Proje Klasör Yapısı
+### 2. Kullanıcı Profili
+Kullanıcı kendi beceri seviyelerini 0-5 arasında girer.
 
-```text
+### 3. Beceri Boşluğu Hesabı
+gap = required_level - current_level
+
+
+Sadece **gap > 0** olan beceriler analiz edilir.
+
+### 4. Öncelik Skoru
+Rol ağırlığı, önkoşullar ve hızlı kazanım faktörleri değerlendirilir.
+
+### 5. Bağımlılık Grafı
+NetworkX kullanılarak beceriler arası önkoşul ilişkileri modellenir.
+
+### 6. Haftalık Planlama
+Haftalık çalışma süresine göre uygulanabilir bir öğrenme planı oluşturulur.
+
+---
+
+# Uygulama Akışı
+
+### Login
+- E-posta / şifre giriş
+- Demo hesap
+- Sosyal giriş butonları
+
+### Hedef ve Profil
+- Hedef rol seçimi
+- Haftalık çalışma süresi
+- Beceri seviyeleri
+
+### Beceri Boşluğu Analizi
+- Eksik beceriler tablosu
+- Grafikler
+- Öncelik skorları
+
+### Öğrenme Yol Haritası
+- Haftalık plan
+- Mini görevler
+- Öğrenme sıralaması
+
+---
+
+# Kurulum
+
+### Repoyu klonlayın
+
+git clone https://github.com/codewarrior96/ROADMAP.git
+
+cd YolHaritam-AI
+
+
+### Sanal ortam oluşturun
+
+Windows:
+
+python -m venv venv
+venv\Scripts\activate
+
+### Bağımlılıkları yükleyin
+
+pip install -r requirements.txt
+
+shell
+Kodu kopyala
+
+### Uygulamayı çalıştırın
+
+streamlit run app.py
+
+css
+Kodu kopyala
+
+Tarayıcıda açılan adres:
+
+http://localhost:8501
+
+yaml
+Kodu kopyala
+
+---
+
+# Demo Giriş
+
+E-posta: demo@YolHaritam.com
+Şifre: 123456
+
+yaml
+Kodu kopyala
+
+---
+
+# Proje Klasör Yapısı
+
 YolHaritam-AI/
-  app.py
-  requirements.txt
-  .env.example
-  README.md
-  data/
-    roles.json
-    skills.json
-    modules.json
-  src/
-    algorithm.py
-    planner.py
-    explainer.py
-    data_loader.py
-    design_system.py
-    ui_helpers.py
-    auth_manager.py
-    state_manager.py
-    navigation_manager.py
-  docs/
-    ui_promptlari.md
-  assets/
-    images/
-      myway-icon.png
-```
+│
+├── app.py
+├── requirements.txt
+├── .env.example
+├── README.md
+│
+├── data/
+│ ├── roles.json
+│ ├── skills.json
+│ └── modules.json
+│
+├── src/
+│ ├── algorithm.py
+│ ├── planner.py
+│ ├── explainer.py
+│ ├── data_loader.py
+│ ├── design_system.py
+│ ├── ui_helpers.py
+│ ├── auth_manager.py
+│ ├── state_manager.py
+│ └── navigation_manager.py
+│
+├── docs/
+│ └── ui_promptlari.md
+│
+└── assets/
+└── images/
+└── myway-icon.png
 
-Bu yapı, küçük ama **üniversite dersi için sunulabilir** nitelikte, anlaşılır ve genişletilebilir bir MVP ortaya koymayı amaçlar.
+yaml
+Kodu kopyala
+
+---
+
+# Son Güncellemeler
+
+- Login sayfası yeniden tasarlandı
+- Logo görünümü optimize edildi
+- Cyan glow efektleri eklendi
+- UI/UX iyileştirmeleri yapıldı
+- Beceri boşluğu analizi geliştirildi
+
+---
+
+# Ekran Görüntüleri
+
+Login ekranı, dashboard ve analiz sayfalarının görüntüleri buraya eklenebilir.
+
+Örnek:
+
+---
+
+# Geliştirici
+
+**Salim**
+
+Yapay zeka, veri bilimi ve yazılım geliştirme alanlarında kendini geliştirmeye odaklanan bir geliştirici.
+
+---
+
+# Not
+
+YolHaritam küçük ama genişletilebilir bir MVP olarak tasarlanmıştır. Amaç kullanıcıya yalnızca bir liste sunmak değil, **anlaşılabilir, mantıklı ve uygulanabilir bir öğrenme rotası** oluşturmaktır.
+
 
